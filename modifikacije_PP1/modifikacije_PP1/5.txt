@@ -1,0 +1,11 @@
+//niz['a','b','c'] i kad se pozove niz[5]@4 => niz[(5+4)%arraylength]
+
+//niz index sabirak
+Code.put(Code.add);
+//niz index+sabirak
+Code.load(obj);
+Code.put(Code.arraylength);
+//niz index+sabirak length
+Code.put(Code.rem);
+//niz index+sabirak%length
+Code.put(Code.aload)

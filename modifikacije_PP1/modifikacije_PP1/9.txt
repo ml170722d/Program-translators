@@ -1,0 +1,57 @@
+
+// dodati final ispred deklaracije niza i omoguciti da se elementima tog niza samo jednom //moze dodeliti vrednost - januar 2021 RTI
+
+	//niz index val
+	Code.put(Code.dup2);
+	//niz index val index val
+	Code.put(Code.pop);
+	//niz index val index
+	Code.load(tmp);
+	//niz index val index desObj ---------------
+	swap();
+	//niz index val desObj index ---------------
+	
+	
+	Code.load(tmp);
+	Code.put(Code.arraylength);
+	//niz index val desObj index length
+	Code.loadConst(2);
+	Code.put(Code.div);
+	//niz index val desObj index length 2 div
+	Code.put(Code.add);
+	//niz index val desObj index+length/2
+	Code.put(Code.aload);
+	//niz index val niz[len/2+index]
+	
+	
+	//poredim niz[len/2+index] i 1
+	Code.loadConst(1);
+	Code.put(Code.jcc + Code.eq);
+	tmpAddr = Code.pc;
+	Code.put2(0); //gde treba da skocim 
+	
+	//niz index val
+	Code.put(Code.dup2);
+	//niz index val index val
+	Code.put(Code.pop);
+	//niz index val index
+	Code.load(tmp);
+	//niz index val index desObj ---------------
+	swap();
+	//niz index val desObj index ---------------
+	
+	Code.load(tmp);
+	Code.put(Code.arraylength);
+	//niz index val desObj index length
+	Code.loadConst(2);
+	Code.put(Code.div);
+	//niz index val desObj index length 2 div
+	Code.put(Code.add);
+	//niz index val desObj index+length/2
+	Code.loadConst(1);
+	//niz index val desObj index+length/2 1
+	Code.put(Code.astore);
+	//niz index val 
+	Code.put(Code.astore);
+	//prazan stek
+	Code.fixup(tmpAddr);

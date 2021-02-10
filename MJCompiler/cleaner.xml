@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="vezbe1" default="clearAllLogs" basedir=".">
+
+	<target name="clearAllLogs">
+		<delete>
+			<fileset dir="logs">
+			</fileset>
+		</delete>
+	</target>
+
+</project>

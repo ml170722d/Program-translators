@@ -1,0 +1,440 @@
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+import rs.ac.bg.etf.pp1.ast.*;
+
+/*-----------------------------------------------------------------------------------------------------------*/
+
+parser code {:
+
+	private boolean parserError;
+
+	public boolean getParserError(){
+		return parserError;
+	}
+
+	Logger log = Logger.getLogger(getClass());
+   
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+     
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+  
+    public void syntax_error(Symbol cur_token) {
+        report_error("Syntax error", cur_token);
+    }
+  
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatal error, parsing can not continue", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol)
+            msg.append (" on line ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+	
+	protected int error_sync_size(){
+		return 3;
+	}
+	
+	/* my custom function to log info */
+	public void log_info(String message, Object info) {
+		parserError = true;
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol)
+            msg.append (" on line ").append(((Symbol)info).left);
+        log.warn(msg.toString());
+    }
+:}
+
+init with {:
+	parserError = false;
+:}
+
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null) 
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+/*-----------------------------------------------------------------------------------------------------------*/
+
+/* bypass explicit type conversion */
+terminal String IDENT;
+terminal Integer NUMCONST;
+terminal Character CHARCONST;
+terminal String BOOLCONST;
+
+/* default terminals */
+	/* keywords */
+terminal PROG, BREAK,CONTINUE, CONST, NEW, CLASS, ENUM, EXTENDS, PRINT, READ, RETURN, VOID;
+	
+	/* loops */
+terminal DO, WHILE;
+
+	/* conditional statements */
+terminal IF, ELSE, SWITCH, CASE;
+
+	/* special symbols */
+terminal LBRACE, LBRACKET, LSQUAREB, RBRACE, RBRACKET, RSQUAREB, ASSIGN, SEMI, DOT, COMMA, QUESMART, COLON;
+	
+	/* operations */
+terminal ADD, SUB, INC, DEC, MUL, DIV, MOD;
+
+	/* conditions */
+terminal AND, OR, EQ, NEQ, GT, GEQT, LT, LEQT;
+
+	/* types */
+
+/*-----------------------------------------------------------------------------------------------------------*/
+
+/*1*/
+nonterminal DeclarationList, Declaration, MethodDeclList;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Program, ProgramName;
+/*2*/
+nonterminal ConstDecl, ConstDeclarationLine;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj ConstAssign;
+nonterminal rs.etf.pp1.symboltable.concepts.Struct ConstValue;
+/*3*/
+nonterminal VarDecl, StartOfValDeclLst, MiddleOfVarDeclLst, EndOfVarDeclLst;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj VarAssign;
+/*4*/
+nonterminal ClassDecl, ClassName, ParentClass, ClassBody, ClassFieldDeclList, ClassMethodDeclList, LocalVars;
+/*5*/
+nonterminal MethodName, MethodParams, MethodLocalVars, MethodStmts, StatementList, FormParsList;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj MethodDecl, ReturnTypeAndName;
+/*6*/
+nonterminal FormPars;
+/*7*/
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type;
+/*8*/
+nonterminal PrintParam;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Statement;
+/*9*/
+nonterminal FunActPars;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj DesignatorStmt;
+/*10*/
+nonterminal ActPars;
+/*11*/
+nonterminal Condition;
+/*12*/
+nonterminal CondTerm;
+/*13*/
+nonterminal CondFact, ExtCondFact;
+/*14*/
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Expr, ExprSub, TermLst;
+nonterminal TrueBranch, FalseBranch, ConditionTernary;
+/*15*/
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Term;
+/*16*/
+nonterminal DesignatorFunCall;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Factor, NewTypeArr;
+/*17*/
+nonterminal DesignatorExpr, DesignatorList;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Designator;
+/*18*/
+nonterminal Assignop;
+/*19*/
+nonterminal Relop;
+/*20*/
+nonterminal Addop;
+/*21*/
+nonterminal Mulop;
+
+/*-----------------------------------------------------------------------------------------------------------*/
+
+/*1*/
+Program ::= (Program) PROG ProgramName DeclarationList LBRACE MethodDeclList RBRACE;
+
+ProgramName ::= (ProgramName) IDENT:progName;
+
+DeclarationList ::= (GlobalDeclarations) DeclarationList Declaration
+		|
+		(NoGlobalDeclarations) /*epsilon*/
+		;
+
+Declaration ::= (GlobalConstDeclaration) ConstDecl 
+		|
+		(GlobalVarDeclaration) VarDecl
+		|
+		(GlobalClassDeclaration) ClassDecl
+		;
+		
+/*2*/
+ConstDecl ::= (ConstDeclaration) CONST Type ConstDeclarationLine SEMI;
+
+ConstDeclarationLine ::= (MultiConstDecl) ConstDeclarationLine COMMA ConstAssign
+		|
+		(SingleConstDecl) ConstAssign
+		; 
+
+ConstAssign ::= (ConstAssign) IDENT:name ASSIGN ConstValue;	
+
+ConstValue ::= (NumConst) NUMCONST:value
+		|
+		(CharConst) CHARCONST:value
+		|
+		(BoolConst) BOOLCONST:value
+		;
+			
+/*3*/
+VarDecl ::= (VarDeclaration) Type StartOfValDeclLst SEMI
+		|
+		/* Recovery doesn't working most times (example: int a = 0;) */
+		(ErrorVarDeclSemi) error SEMI:limiter
+			{: parser.log_info("Recovery done until ';' in var declaration on line " + limiterleft, null); :}
+		;
+		
+StartOfValDeclLst ::= (MultiVarDecl) MiddleOfVarDeclLst VarAssign
+		|
+		(SingleVarDecl) VarAssign
+		;
+		
+MiddleOfVarDeclLst ::= (MultiVarDeclList) MiddleOfVarDeclLst EndOfVarDeclLst
+		|
+		(SingleVarDeclList) EndOfVarDeclLst
+		;
+		
+EndOfVarDeclLst ::= (VarDeclarationWithComma) VarAssign COMMA		
+		|
+		/* Recovery works most times (example: int a,,a,,a;) */
+		(ErrorVarDeclarationWithComma) error COMMA:limiter
+			{: parser.log_info("Recovery done until ',' in var declaration on line " + limiterleft, null); :}
+		;
+		
+VarAssign ::= (VarAssignSingle) IDENT:name
+		|
+		(VarAssignArray) IDENT:name LSQUAREB RSQUAREB 
+		;
+		
+/*4*/
+ClassDecl ::= (ClassDeclaration) CLASS ClassName ParentClass LBRACE ClassBody RBRACE;
+
+ClassName ::= (NewClassName) IDENT;
+
+ParentClass ::= (ParentClassName) EXTENDS Type
+		|
+		(NoParentClass) /*epsilon*/ 
+		;
+		
+ClassBody ::= (ClassBodyDeclaration) ClassFieldDeclList ClassMethodDeclList;
+
+ClassFieldDeclList ::= (ClassieldDeclarationList) LocalVars;
+
+LocalVars ::= (LocalVariables) LocalVars VarDecl
+		|
+		(NoLocalVariables) /*epsilon*/
+		;
+		
+ClassMethodDeclList ::= (ClassMethodDeclarationList) LBRACE MethodDeclList RBRACE
+		|
+		(NoClassMethodDeclList) /*epsilon*/
+		;
+		
+/*5*/
+MethodDeclList ::= (MethodDeclarationList) MethodDeclList MethodDecl
+		|
+		(NoMethodDeclList) /*epsilon*/
+		;
+		
+MethodDecl ::= (SingleMethodDecl) ReturnTypeAndName LBRACKET MethodParams RBRACKET MethodLocalVars LBRACE MethodStmts RBRACE;
+
+ReturnTypeAndName ::= (SomeReturnType) Type:retType MethodName:name
+		|
+		(NoReturnType) VOID:retType MethodName:name
+		;
+		
+MethodName ::= (MethodName) IDENT:name;
+
+MethodParams ::= (MethodParameters) FormParsList
+		|
+		(NoMethodParams) /*epsilon*/
+		;
+
+MethodLocalVars ::= (MethodLocalVars) LocalVars;
+
+MethodStmts ::= (MethodStatements) StatementList
+		|
+		(NoMethodStatements) /*epsilon*/
+		;
+
+/*6*/
+FormParsList ::= (MultiFormPars) FormParsList COMMA FormPars
+		|
+		(SingleFormPar) FormPars
+		;
+		
+FormPars ::= (SingleParam) Type:type VarAssign:paramName;
+
+/*7*/
+Type ::= (Type) IDENT:typeName;
+
+/*8*/
+StatementList ::= (MultiStatements) StatementList Statement
+		|
+		(SingleStatement) Statement
+		;
+		
+Statement ::= (DesignatorStatementLine) DesignatorStmt SEMI
+		|
+		(ReadStatement) READ LBRACKET Designator RBRACKET SEMI
+		|
+		(PrintStatement) PRINT LBRACKET Expr PrintParam RBRACKET SEMI
+		|
+		/* Recovery works most times */
+		(StatementError) error SEMI:limiter
+			{: parser.log_info("Recovery done until ';' in statement on line " + limiterleft, null); :}
+		;
+		
+PrintParam ::= (PrintOneParam) /*epsilon*/
+		|
+		(PrintMoreParam) COMMA NUMCONST:secArg
+		;
+
+/*9*/
+
+DesignatorStmt ::= (AssignExpr) Designator Assignop Expr
+		|
+		(FunCall) Designator FunActPars
+		|
+		(IncrementDesig) Designator INC
+		|
+		(DecrementDesig) Designator DEC
+		;
+		
+FunActPars ::= (FunWithArg) LBRACKET ActPars RBRACKET
+		|
+		(FunWithoutArg) LBRACKET RBRACKET
+		;
+
+/*10*/
+ActPars ::= (MultiActPars) ActPars COMMA Expr
+		|
+		(SingleActPars) Expr
+		;
+
+/*11*/
+Condition ::= (Condition) /*epsilon*/;
+
+/*12*/
+CondTerm ::= (CondTerm) /*epsilon*/;
+
+/*13*/
+CondFact ::= (SimpleCondition) Expr ExtCondFact;
+
+ExtCondFact ::= (ExtendSimpleCondition) Relop Expr
+		|
+		(NoExtendSimpleCondition) /*epsilon*/
+		;
+		
+/*14*/
+Expr ::= (SimpleTernaryExpr) ExprSub:c ConditionTernary QUESMART ExprSub:t TrueBranch COLON FalseBranch ExprSub:f
+		|
+		(SingleExpr) ExprSub
+		;
+		
+TrueBranch ::= (TrueBranch) /*epsilon*/;
+
+FalseBranch ::= (FalseBranch) /*epsilon*/;
+
+ConditionTernary ::= (ConditionTernary) /*epsilon*/;
+
+ExprSub ::= (ReverseValue) SUB TermLst
+		|
+		(NoReverseValue) TermLst
+		;
+
+TermLst ::= (TermList) TermLst Addop Term
+		|
+		(SingleTerm) Term
+		;
+
+/*15*/
+Term ::= (FactorList) Term Mulop Factor
+		|
+		(SingleFactor) Factor
+		;
+
+/*16*/
+Factor ::= (FactorDesignator) Designator DesignatorFunCall
+		|
+		(FactorNumber) NUMCONST:value
+		|
+		(FactorCharacter) CHARCONST:value
+		|
+		(FactorBoolean) BOOLCONST:value
+		|
+		(FactorNewType) NEW Type NewTypeArr
+		|
+		(FactorExprInBracket) LBRACKET Expr RBRACKET
+		;
+		
+DesignatorFunCall ::= (InlineFunCall) LBRACKET ActPars RBRACKET
+		|
+		(NotInlineFunCall) /*epsilon*/
+		;
+		
+NewTypeArr ::= (NewTypeArray) LSQUAREB Expr RSQUAREB
+		|
+		(NotNewTypeArray) /*epsilon*/
+		;
+
+/*17*/
+Designator ::= (DesigLst) IDENT:var DesignatorList
+		|
+		(SingleDsig) IDENT:var
+		;
+
+DesignatorList ::= (DesigExprLst) DesignatorList DesignatorExpr
+		|
+		(SingleDesigExpr) DesignatorExpr
+		;
+
+DesignatorExpr ::= (AccessDeisgnatorField) DOT IDENT:var
+		|
+		(AccessDeisgnatorArray) LSQUAREB Expr RSQUAREB
+		;
+
+/*18*/
+Assignop ::= (Assignop) ASSIGN;
+
+/*19*/
+Relop ::= (Equal) EQ
+		|
+		(NotEqual) NEQ
+		|
+		(GreaterThen) GT
+		|
+		(GreaterOrEqualThen) GEQT
+		|
+		(LessThen) LT
+		|
+		(LessOrEqualThen) LEQT
+		;
+
+/*20*/
+Addop ::= (Addop) ADD:sign
+		|
+		(Subop) SUB:sign
+		;
+
+/*21*/
+Mulop ::= (Mulop) MUL:oper
+		|
+		(Divop) DIV:oper
+		|
+		(Modop) MOD:oper
+		;
+		
+		
+		
+		
+		
+
+		/*epsilon*/

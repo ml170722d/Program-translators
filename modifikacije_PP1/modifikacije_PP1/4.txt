@@ -1,0 +1,72 @@
+/*
+	#niz[2] => broj pristupa elementu niza 
+	npr. 
+	niz[2] = 2;
+	niz[1] = niz[2];
+	print(#niz[2]); ----> treba da ispise 2
+*/
+
+    public void instrukcije(Obj obj){
+    	//niz index
+		Code.put(Code.dup2);
+		//niz index niz index
+		Code.load(obj);
+		Code.put(Code.arraylength);
+		//niz index niz index lenarray
+		Code.loadConst(2);
+		Code.put(Code.div);
+		//niz index niz index lenarray/2
+		Code.put(Code.add);
+		//niz index niz index+lenarray/2
+		Code.put(Code.dup2);
+		//niz index niz index+lenarray/2 niz index+lenarray/2
+		Code.put(Code.aload);
+		//niz index niz index+lenarray/2 niz[index+lenarray/2]
+		Code.loadConst(1);
+		//niz index niz index+lenarray/2 niz[index+lenarray/2] 1
+		Code.put(Code.add);
+		//niz index niz index+lenarray/2 niz[index+lenarray/2]+1
+		Code.put(Code.astore);
+    }
+	
+	   public void visit(Designator designator) {
+    	String name = designator.getDesignatorName().getName();
+    	Obj obj = Tab.find(name);
+    	if(designator.getOptionalExpr() instanceof OptExpr) {
+    		if(designator.getParent() instanceof FactDesignator) {
+    			
+    		}else {
+    			instrukcije(obj);
+    		}
+    	}
+    }
+	
+	
+	public void visit(OptExpr optExpr) {
+        if (optExpr.getParent().getParent() instanceof FactDesignator) {
+        	FactDesignator factDesignator = (FactDesignator)optExpr.getParent().getParent();
+            String name = ((Designator)optExpr.getParent()).getDesignatorName().getName();
+            Obj obj = Tab.find(name);
+            if (obj.getType().getElemType() == Tab.charType){
+                Code.put(Code.baload);
+            }
+            else {
+            	if(factDesignator.getParent().getParent().getParent().getParent().getParent() instanceof PrintStatement) {
+            		PrintStatement prtStm = (PrintStatement)factDesignator.getParent().getParent().getParent().getParent().getParent();
+            		if(prtStm.getOptionalHash() instanceof OptHash) {
+            			Code.load(obj);
+                		Code.put(Code.arraylength);
+                		Code.loadConst(2);
+                		Code.put(Code.div);
+                		Code.put(Code.add);
+            		}else {
+            			instrukcije(obj);
+            		}
+            	}else {
+            		instrukcije(obj);
+            	}
+            	Code.put(Code.aload);
+            	
+            }
+        }
+    }

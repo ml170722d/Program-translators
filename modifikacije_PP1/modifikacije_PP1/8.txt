@@ -1,0 +1,25 @@
+//niz[1,2] - swap-uje niz[1] sa niz[2]
+
+// niz index1 index2
+Code.put(dup2);
+// niz index1 index2 index1 index2
+Code.load(obj);
+// niz index1 index2 index1 index2 desObj
+swap();
+// niz index1 index2 index1 desObj index2
+Code.put(Code.aload);
+// niz index1 index2 index1 desObj[index2]
+swap1_3();
+// niz index1 desObj[index2] index2 index1
+Code.load(obj);
+// niz index1 desObj[index2] index2 index1 desObj
+swap();
+// niz index1 desObj[index2] index2 desObj index1 
+Code.put(Code.aload);
+// niz index1 desObj[index2] index2 desObj[index1]
+Code.load(obj);
+// niz index1 desObj[index2] index2 desObj[index1] desObj
+swap1_3();
+// niz index1 desObj[index2] desObj index2 desObj[index1]
+Code.put(Code.astore);
+Code.put(Code.astore);

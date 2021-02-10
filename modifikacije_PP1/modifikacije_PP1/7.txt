@@ -1,0 +1,38 @@
+//niz @ - da se ispise max niza -> mislim da je ovo za B modif ipak
+
+//niz index val
+Code.put(Code.dup);
+//niz index val val
+Code.load(obj);
+//niz index val val desObj
+Code.load(obj);
+Code.put(Code.arraylength);
+//niz index val val desObj length
+Code.loadConst(1);
+//niz index val val desObj length 1
+Code.put(Code.sub);
+//niz index val val desObj length-1
+Code.put(Code.aload);
+//niz index val val desObj[length-1]
+Code.put(Code.jcc + Code.le);
+tmpAdr = Code.pc;
+Code.put2(0);
+//niz index val
+Code.put(Code.dup);
+//niz index val val
+Code.load(obj);
+//niz index val val desObj
+Code.load(obj);
+Code.put(Code.arraylength);
+//niz index val val desObj length
+Code.loadConst(1);
+//niz index val val desObj length 1
+Code.put(Code.sub);
+//niz index val val desObj length-1
+swap1_3();
+//niz index val length-1 val desObj 
+swap1_3();
+//niz index val desObj length-1 val 
+Code.put(Code.astore);
+Code.fixup(tmpAddr);
+Code.put(Code.astore);

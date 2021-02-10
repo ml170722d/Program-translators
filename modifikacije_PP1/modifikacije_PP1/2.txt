@@ -1,0 +1,25 @@
++	//MAJA 1296124481
+	//ZIZA 1514756673
+	//niz@ 1296124481 ili 1514756673
+	public void visit(HelpModification help) {
+		for(int i=0;i<4;i++) {
+			Code.load(help.getDesignator().obj);
+			Code.loadConst(i);
+		}
+	} 
+	
+	public void visit(Modification mod) {
+		Obj con = new Obj(Obj.Var,"$",Tab.intType);
+		Code.store(con);
+		
+		Code.load(con);
+		Code.put(Code.bastore);
+		int x = 8;
+		for(int i=0;i<3;i++) {
+			Code.load(con);
+			Code.loadConst(x);
+			x+=8;
+			Code.put(Code.shr);
+			Code.put(Code.bastore);
+		}
+	}

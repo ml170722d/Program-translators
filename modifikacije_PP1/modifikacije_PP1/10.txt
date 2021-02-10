@@ -1,0 +1,29 @@
+// x@y -> x^2 + 2*x*y + y^2
+
+// x y
+Code.put(Code.dup2);
+// x y x y
+Code.put(Code.mul);
+// x y x*y
+Code.put(Code.dup);
+// x y x*y x*y 
+Code.put(Code.add);
+// x y x*y+x*y 
+swap();
+// x x*y+x*y y
+Code.put(Code.dup);
+// x x*y+x*y y y
+Code.put(Code.mul);
+// x x*y+x*y y*y
+swap1_3();
+// y*y x x*y+x*y 
+swap();
+// y*y x*y+x*y x 
+Code.put(Code.dup);
+// y*y x*y+x*y x x
+Code.put(Code.mul);
+// y*y x*y+x*y x*x
+Code.put(Code.add);
+// y*y x*y+x*y+x*x
+Code.put(Code.add);
+// y*y+x*y+x*y+x*x

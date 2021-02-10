@@ -1,0 +1,14 @@
+program Program
+	
+	const int pi = 3, 
+		e = 2;
+		
+	const char c = 'c';
+			
+	const bool b = true;
+	
+	const int pi2 = 3, 
+		e2 = 2;
+{
+	
+}

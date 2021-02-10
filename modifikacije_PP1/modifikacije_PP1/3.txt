@@ -1,0 +1,33 @@
+//niz@1 = niz[1] + niz[5-1];  gde je 5 arraylength, ova jedinica je NUMBER nije Expr
+
+//niz index
+Code.put(Code.dup2);
+//niz index niz index
+Code.put(Code.dup);
+//niz index index
+Code.put(Code.dup);
+//niz index index index
+Code.load(tmp);
+//niz index index index desObj
+swap();
+//niz index index desObj index 
+Code.load(tmp);
+Code.put(Code.arraylength);
+//niz index index desObj index length
+swap();
+//niz index index desObj length index
+Code.put(Code.sub);
+//niz index  index desObj length-index
+Code.put(Code.aload);
+//niz index index niz[length-index]
+swap();
+//niz index niz[length-index] index
+Code.load(tmp);
+//niz index  niz[length-index] index desObj
+swap();
+//niz index niz[length-index] desObj index 
+Code.put(Code.aload);
+//niz index niz[length-index] niz[index] 
+Code.put(Code.add);
+//niz index niz[length-index]+niz[index]
+Code.put(Code.astore);

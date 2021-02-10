@@ -1,0 +1,25 @@
+//januar 2021 SI - goto i labela, moze da se skoci unapred i unazad u main-u - Januar 2021 //SI/Februar 2020
+
+    public void visit(EmptyForLabel emptyForLabel) {
+    	OptLabel optLabel = (OptLabel) emptyForLabel.getParent();
+    	String nameLab = optLabel.getNameLabel();
+    	if(mapa.get(nameLab) == null) {
+    		mapa.put(nameLab, Code.pc);
+    	}else {
+    		Code.fixup(mapa.get(nameLab));
+    		mapa.put(nameLab, Code.pc);
+    	}
+    }
+    
+    public void visit(GotoLabelStmt gotoLabelStmt) {
+    	String nameLab = gotoLabelStmt.getNameLabel();
+    	if(mapa.get(nameLab) == null) {
+    		Code.put(Code.jmp);
+    		mapa.put(nameLab, Code.pc);
+    		Code.put2(0);
+//    		obisao.add(nameLab);
+    	}else {
+    		Code.put(Code.jmp);
+    		Code.put2(mapa.get(nameLab) - Code.pc + 1);
+    	}
+    }
